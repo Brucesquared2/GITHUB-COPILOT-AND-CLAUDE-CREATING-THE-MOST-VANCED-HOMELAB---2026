@@ -1,0 +1,19 @@
+{
+  "name": "MY ADVANCED AI HOMELAB - 2026",
+  "dockerComposeFile": ["../docker-compose.yml"],
+  "service": "openfang",
+  "workspaceFolder": "/workspaces/my-advanced-ai-homelab-2026",
+  "settings": {
+    "terminal.integrated.defaultProfile.linux": "bash"
+  },
+  "extensions": [
+    "ms-python.python",
+    "ms-vscode.cpptools",
+    "rust-lang.rust-analyzer",
+    "ms-azuretools.vscode-docker",
+    "github.copilot",
+    "eamodio.gitlens"
+  ],
+  "forwardPorts": [4200, 4000, 3030, 8000, 8002, 3002, 11434, 8001],
+  "postCreateCommand": "pip install -r requirements.txt || true"
+}

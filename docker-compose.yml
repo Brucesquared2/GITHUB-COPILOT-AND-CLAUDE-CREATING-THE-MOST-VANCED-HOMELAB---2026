@@ -1,0 +1,67 @@
+    name: omnicore-model-router
+
+    services:
+      model-router:
+        image: python:3.11-slim
+        container_name: model_router
+        working_dir: /app
+        command: >
+          sh -c "pip install --no-cache-dir fastapi uvicorn requests redis &&
+                 uvicorn services.model_router:app --host 0.0.0.0 --port 8090"
+        environment:
+          - REDIS_HOST=redis-t2
+          - REDIS_PORT=6337
+          - AUDIT_STREAM=mem:events:audit
+          - ROUTING_POLICY=deterministic_v1
+          - DEFAULT_TIMEOUT_SEC=12
+          - DEFAULT_MAX_TOKENS=300
+          - DEFAULT_TEMPERATURE=0.0
+          - DEFAULT_SEED=42
+
+          - OPENCLOW_URL=http://openclaw:8080/v1/generate
+          - OPENCLOW_API_KEY=${OPENCLOW_API_KEY:-}
+
+          - MINIMAX_URL=https://api.minimax.chat/v1/text/chatcompletion_pro
+          - MINIMAX_API_KEY=${MINIMAX_API_KEY:-}
+
+          - VLLM_URL=http://vllm:8000/v1/completions
+          - VLLM_API_KEY=${VLLM_API_KEY:-}
+
+          - ENABLE_OPENCLOW=1
+          - ENABLE_MINIMAX=1
+          - ENABLE_VLLM=1
+        volumes:
+          - ./:/app
+        networks: [omnicore_net]
+        ports:
+          - "8090:8090"
+        restart: unless-stopped
+
+      openclaw:
+        image: ghcr.io/open-webui/open-webui:main
+        container_name: openclaw
+        networks: [omnicore_net]
+        restart: unless-stopped
+
+      vllm:
+        image: vllm/vllm-openai:latest
+        container_name: vllm
+        command: >
+          --model ${VLLM_MODEL:-Qwen/Qwen2.5-7B-Instruct}
+          --host 0.0.0.0
+          --port 8000
+          --max-model-len 4096
+        environment:
+          - HUGGING_FACE_HUB_TOKEN=${Hugging_Face_Hub_Token:-}
+        ports:
+          - "8000:8000"
+        networks: [omnicore_net]
+        restart: unless-stopped
+
+    networks:
+      omnicore_net:
+        external: true
+        name: omnicore_net
+        
+        
+    
